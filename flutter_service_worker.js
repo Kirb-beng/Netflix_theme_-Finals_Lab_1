@@ -9,7 +9,7 @@ const RESOURCES = {"assets/AssetManifest.bin": "e1d3712a3c72316c22d27cf180521631
 "assets/assets/images/netflix_bg.jpg": "828b9a149f4f13241af52d5f51033999",
 "assets/assets/images/netflix_intro.gif": "5728aef13f51223982c0b8f9d71c0aba",
 "assets/FontManifest.json": "dc3d03800ccca4601324923c0b1d6d57",
-"assets/fonts/MaterialIcons-Regular.otf": "f914cd15990067c4343161072b0eb518",
+"assets/fonts/MaterialIcons-Regular.otf": "c14264cd59763127e277efeb89212c74",
 "assets/NOTICES": "801b9071543607c1d4f3cca9116d1cee",
 "assets/packages/cupertino_icons/assets/CupertinoIcons.ttf": "33b7d9392238c04c131b6ce224e13711",
 "assets/shaders/ink_sparkle.frag": "ecc85a2e95f5e9f53123dcaf8cb9b6ce",
@@ -27,12 +27,12 @@ const RESOURCES = {"assets/AssetManifest.bin": "e1d3712a3c72316c22d27cf180521631
 "canvaskit/skwasm_st.wasm": "56c3973560dfcbf28ce47cebe40f3206",
 "favicon.png": "3817181b1528e11615ecc8df8d6e1aae",
 "flutter.js": "76f08d47ff9f5715220992f993002504",
-"flutter_bootstrap.js": "373901167ca09d255d901a9fc22b6571",
+"flutter_bootstrap.js": "ecdf2a965f70565c6eed71e1fa40891a",
 "icons/Icon-192.png": "10b935c9039c92eb3351a431a03aa308",
 "icons/Icon-512.png": "15eef9ffb7790d742277eed3ef0bc1e4",
 "index.html": "e9132debe3229b48a5a045ee8f39d0c4",
 "/": "e9132debe3229b48a5a045ee8f39d0c4",
-"main.dart.js": "6b4888a85e394a7cbef105f692fb9c6c",
+"main.dart.js": "bc204b6c1cdc3c107a93170704cb990e",
 "manifest.json": "aa2ba3c5cd817749087b9653c55efd59",
 "version.json": "cdbfdb33932af3ce1ce79955b4eadb33"};
 // The application shell files that are downloaded before a service worker can
