@@ -34,7 +34,7 @@ class Responsive {
       isMobile(context) ? 16 : 32;
 
   static double logoFontSize(BuildContext context) =>
-      isMobile(context) ? 24 : 30;
+      isMobile(context) ? 34 : 44;
 
   static double heroHeight(BuildContext context) {
     final w = MediaQuery.of(context).size.width;

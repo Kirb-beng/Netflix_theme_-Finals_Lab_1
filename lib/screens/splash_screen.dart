@@ -46,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final gifWidth = Responsive.isMobile(context) ? 160.0 : 220.0;
+    final gifWidth = Responsive.isMobile(context) ? 280.0 : 420.0;
     return Scaffold(
       backgroundColor: NetflixColors.black,
       body: Center(

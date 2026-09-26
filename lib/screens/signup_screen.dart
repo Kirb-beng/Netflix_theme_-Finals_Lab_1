@@ -14,22 +14,131 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _dobController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _agreedToTerms = false;
+  bool _showTermsError = false;
+  int _selectedAvatar = 0;
+  String? _confirmError;
+
+  double _passwordStrengthValue = 0;
+  String _passwordStrengthLabel = '';
+  Color _passwordStrengthColor = NetflixColors.grey;
+
+  static const List<IconData> _avatarIcons = [
+    Icons.person,
+    Icons.face,
+    Icons.sentiment_satisfied_alt,
+    Icons.mood,
+    Icons.emoji_emotions,
+  ];
+
+  static const List<Color> _avatarColors = [
+    Color(0xFFE50914),
+    Color(0xFF0071EB),
+    Color(0xFF2EAD5E),
+    Color(0xFFB37FEB),
+    Color(0xFFF2A93B),
+  ];
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
+    _dobController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
+  void _onPasswordChanged(String value) {
+    setState(() {
+      final result = _calculateStrength(value);
+      _passwordStrengthValue = result.value;
+      _passwordStrengthLabel = result.label;
+      _passwordStrengthColor = result.color;
+      if (_confirmPasswordController.text.isNotEmpty) {
+        _confirmError = _confirmPasswordController.text == value
+            ? null
+            : 'Passwords do not match.';
+      }
+    });
+  }
+
+  void _onConfirmChanged(String value) {
+    setState(() {
+      _confirmError = value.isEmpty
+          ? null
+          : (value == _passwordController.text
+              ? null
+              : 'Passwords do not match.');
+    });
+  }
+
+  _PasswordStrength _calculateStrength(String password) {
+    if (password.isEmpty) {
+      return _PasswordStrength(0, '', NetflixColors.grey);
+    }
+    int score = 0;
+    if (password.length >= 6) score++;
+    if (password.length >= 10) score++;
+    if (RegExp(r'[A-Z]').hasMatch(password)) score++;
+    if (RegExp(r'[0-9]').hasMatch(password)) score++;
+    if (RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) score++;
+
+    if (score <= 1) {
+      return _PasswordStrength(0.25, 'Weak', const Color(0xFFE50914));
+    }
+    if (score <= 2) {
+      return _PasswordStrength(0.5, 'Fair', const Color(0xFFF2A93B));
+    }
+    if (score <= 3) {
+      return _PasswordStrength(0.75, 'Good', const Color(0xFFE0C93B));
+    }
+    return _PasswordStrength(1.0, 'Strong', const Color(0xFF2EAD5E));
+  }
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(now.year - 18, now.month, now.day),
+      firstDate: DateTime(now.year - 100),
+      lastDate: now,
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: NetflixColors.red,
+              onPrimary: NetflixColors.white,
+              surface: NetflixColors.darkGrey,
+              onSurface: NetflixColors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _dobController.text =
+            '${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}';
+      });
+    }
+  }
+
   void _handleSignUp() {
-    if (_formKey.currentState!.validate()) {
+    final formValid = _formKey.currentState!.validate();
+    final termsOk = _agreedToTerms;
+    setState(() => _showTermsError = !termsOk);
+
+    if (formValid && termsOk) {
       // Navigator method: pushReplacementNamed, passing the entered
       // full name forward as route arguments so Home can greet the user.
       Navigator.of(context).pushReplacementNamed(
@@ -87,6 +196,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               style: NetflixTextStyles.greyBody,
                             ),
                             const SizedBox(height: 24),
+
+                            // Full name
                             TextFormField(
                               controller: _nameController,
                               style: NetflixTextStyles.body,
@@ -100,6 +211,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               },
                             ),
                             const SizedBox(height: 16),
+
+                            // Email
                             TextFormField(
                               controller: _emailController,
                               style: NetflixTextStyles.body,
@@ -113,10 +226,90 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               },
                             ),
                             const SizedBox(height: 16),
+
+                            // Phone number
+                            TextFormField(
+                              controller: _phoneController,
+                              style: NetflixTextStyles.body,
+                              keyboardType: TextInputType.phone,
+                              decoration:
+                                  netflixInputDecoration('Phone number'),
+                              validator: (value) {
+                                if (value == null || value.trim().length < 7) {
+                                  return 'Please enter a valid phone number.';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Date of birth
+                            TextFormField(
+                              controller: _dobController,
+                              readOnly: true,
+                              style: NetflixTextStyles.body,
+                              onTap: _pickDate,
+                              decoration:
+                                  netflixInputDecoration('Date of birth')
+                                      .copyWith(
+                                suffixIcon: const Icon(Icons.calendar_today,
+                                    color: NetflixColors.grey, size: 20),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please select your date of birth.';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Avatar picker
+                            const Text('Choose an avatar',
+                                style: NetflixTextStyles.greyBody),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              height: 60,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: _avatarIcons.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(width: 12),
+                                itemBuilder: (context, index) {
+                                  final selected = _selectedAvatar == index;
+                                  return GestureDetector(
+                                    onTap: () =>
+                                        setState(() => _selectedAvatar = index),
+                                    child: AnimatedContainer(
+                                      duration:
+                                          const Duration(milliseconds: 200),
+                                      width: 52,
+                                      height: 52,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: _avatarColors[index],
+                                        border: Border.all(
+                                          color: selected
+                                              ? NetflixColors.white
+                                              : Colors.transparent,
+                                          width: 3,
+                                        ),
+                                      ),
+                                      child: Icon(_avatarIcons[index],
+                                          color: NetflixColors.white),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Password
                             TextFormField(
                               controller: _passwordController,
                               style: NetflixTextStyles.body,
                               obscureText: _obscurePassword,
+                              onChanged: _onPasswordChanged,
                               decoration:
                                   netflixInputDecoration('Password').copyWith(
                                 suffixIcon: IconButton(
@@ -137,11 +330,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 return null;
                               },
                             ),
+                            if (_passwordController.text.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: _passwordStrengthValue,
+                                  minHeight: 5,
+                                  backgroundColor: NetflixColors.fieldGrey,
+                                  valueColor: AlwaysStoppedAnimation(
+                                      _passwordStrengthColor),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _passwordStrengthLabel,
+                                style: TextStyle(
+                                  color: _passwordStrengthColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 16),
+
+                            // Confirm password
                             TextFormField(
                               controller: _confirmPasswordController,
                               style: NetflixTextStyles.body,
                               obscureText: _obscureConfirm,
+                              onChanged: _onConfirmChanged,
                               decoration: netflixInputDecoration(
                                       'Confirm password')
                                   .copyWith(
@@ -163,7 +381,76 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 24),
+                            if (_confirmError != null) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                _confirmError!,
+                                style: const TextStyle(
+                                  color: NetflixColors.red,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ] else if (_confirmPasswordController
+                                .text.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              const Text(
+                                'Passwords match.',
+                                style: TextStyle(
+                                  color: Color(0xFF2EAD5E),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 20),
+
+                            // Terms and conditions
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Checkbox(
+                                  value: _agreedToTerms,
+                                  activeColor: NetflixColors.red,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _agreedToTerms = value ?? false;
+                                      if (_agreedToTerms) {
+                                        _showTermsError = false;
+                                      }
+                                    });
+                                  },
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: RichText(
+                                      text: const TextSpan(
+                                        style: NetflixTextStyles.greyBody,
+                                        children: [
+                                          TextSpan(text: 'I agree to the '),
+                                          TextSpan(
+                                            text: 'Terms and Conditions',
+                                            style: NetflixTextStyles.link,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_showTermsError)
+                              const Padding(
+                                padding: EdgeInsets.only(left: 12),
+                                child: Text(
+                                  'You must agree to the Terms and Conditions.',
+                                  style: TextStyle(
+                                    color: NetflixColors.red,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 16),
+
                             _AnimatedPressButton(
                               label: 'Sign Up',
                               onPressed: _handleSignUp,
@@ -193,6 +480,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
     );
   }
+}
+
+class _PasswordStrength {
+  final double value;
+  final String label;
+  final Color color;
+  const _PasswordStrength(this.value, this.label, this.color);
 }
 
 /// Same animated press button used on the Login screen, kept local so

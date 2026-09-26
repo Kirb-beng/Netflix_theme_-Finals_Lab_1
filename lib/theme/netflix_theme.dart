@@ -19,7 +19,8 @@ class NetflixTextStyles {
     color: NetflixColors.red,
     fontSize: 36,
     fontWeight: FontWeight.w900,
-    letterSpacing: 1.5,
+    letterSpacing: 0.5,
+    fontFamily: 'Arial',
   );
 
   static const TextStyle heading = TextStyle(
